@@ -1,10 +1,11 @@
 import yaml
 from run.train import train_model
 from run.test import test_model
-
 from data_provider.data_factory import create_loaders
 import pandas as pd
-from utils.viz import visualize_results
+import warnings
+
+warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
 
 
 def load_config(config_path="configs/config_lstm.yaml"):
@@ -19,7 +20,7 @@ if __name__ == "__main__":
 
     # load the dataset
     df = pd.read_parquet("example/dataset/2025_AllSites_Orig.parquet")
-    print(df.head())
+    print("Loaded dataset", df.head())
 
     # Create the train and validation data loaders
     train_loader, val_loader = create_loaders(df, config)

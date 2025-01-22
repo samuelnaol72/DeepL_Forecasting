@@ -23,7 +23,7 @@ def timing(func):
 
 # Logging decorator (renamed to avoid conflict)
 def log_decorator(func):
-    def wrapper(*args, **kwargs):
+    def preprocessing_func(*args, **kwargs):
         logging.info(f"Calling {func.__name__} with args={args[1:]}, kwargs={kwargs}")
         result = func(*args, **kwargs)
         if isinstance(result, tuple):
@@ -34,11 +34,9 @@ def log_decorator(func):
             logging.info(f"{func.__name__} returned: {result}")
         return result
 
-    return wrapper
+    return preprocessing_func
 
 
-@timing
-@log_decorator
 def preprocessing_g1(df, num_lags, lookhour, id):
     """
     Preprocesses the data for a single ID by handling outliers, adding time-based features,

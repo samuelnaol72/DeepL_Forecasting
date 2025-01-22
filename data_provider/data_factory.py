@@ -51,24 +51,33 @@ def create_loaders(df, cfg):
             - val_loader (DataLoader): DataLoader for the validation set.
     """
     # Extract configuration parameters with defaults
-    lags = cfg.get("lags", 24)
-    horizon = cfg.get("horizon", 8)
-    ids = cfg.get("ids", [])
-    batch_size = cfg.get("batch_size", 32)
-    shuffle = cfg.get("shuffle", True)
-    model = cfg.get("model", "lstm")
-    device = cfg.get("device", "cpu")
-    channels = cfg.get("channels", 1)
 
-    logging.info(f"Configuration: {cfg}")
+    # preprocessing
+    lags = cfg["preprocessing"]["lags"]
+    horizon = cfg["preprocessing"]["horizon"]
+    ids = cfg["preprocessing"]["ids"]
+
+    # loader
+    channels = cfg["preprocessing"]["channels"]
+    batch_size = cfg["dataloader"]["batch_size"]
+    shuffle = cfg["dataloader"]["shuffle"]
+
+    model = cfg["model"]["name"]
+    device = cfg["device"]["type"]
 
     # Preprocess the data to generate train and validation splits
     X_train, y_train, X_val, y_val = preprocessing(df, lags, horizon, ids)
 
+    # Convert DataFrames to NumPy arrays
+    X_train = X_train.values
+    X_val = X_val.values
+    y_train = y_train.values
+    y_val = y_val.values
+
     # Reshape data for LSTM/GRU models if required
     if model in ["lstm", "gru", "lstm41", "lstmreset", "cnnlstm"]:
-        X_train = X_train.reshape((-1, 31, channels))
-        X_val = X_val.reshape((-1, 31, channels))
+        X_train = X_train.reshape((-1, 33, channels))
+        X_val = X_val.reshape((-1, 33, channels))
         y_train = y_train.reshape((-1, horizon))
         y_val = y_val.reshape((-1, horizon))
 
