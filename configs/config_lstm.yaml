@@ -1,0 +1,26 @@
+# Configuration for DataLoader and Training
+preprocessing:
+  lags: 24                   # Number of lagged features to include
+  horizon: 8                 # Number of future steps to predict
+  ids: [0]          # List of sites to preprocess in the dataset
+  features: 1                # Number of features per timestep
+  channels: 1                # Number of channels in the target output
+
+dataloader:
+  batch_size: 32             # Batch size for DataLoader
+  shuffle: true              # Shuffle training data
+
+model:
+  name: lstm                 # Model type: lstm, gru, lstm41, cnnlstm, etc.
+  input_size: 1              # Number of input features (matches channels)
+  hidden_size: 64            # Number of hidden units in the model
+  num_layers: 2              # Number of layers in the model
+  dropout: 0.2               # Dropout rate
+  save_path: "results/models/lstm.pth" # Path to save the trained model
+
+device:
+  type: cuda                 # Device to run the tensors on ('cpu' or 'cuda')
+
+training:
+  learning_rate: 0.001       # Learning rate for the optimizer
+  epochs: 50                 # Number of training epochs
