@@ -120,12 +120,6 @@ Script to evaluate trained models and compute metrics.
 
 ## Contributing
 Contributions are welcome! Please fork the repository and create a pull request for any feature additions or bug fixes.
-
----
-
-## License
-This project is licensed under the MIT License. See `LICENSE` for details.
-
 ---
 
 ## Contact
