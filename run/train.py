@@ -1,8 +1,15 @@
 import torch
 from torch.optim import Adam
 from torch.nn import MSELoss
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from utils.log import log_metrics
 from utils.saver import save_model
+from models.cnnlstm import CNNLSTM
+from models.gru import GRU
+from models.lstm import LSTM
+from models.lstm41 import LSTM41
+from models.lstmreset import LSTMRESET
+from models.nbeats import NBeatsModel
 
 
 def train_model(config, train_loader, val_loader):
@@ -25,14 +32,39 @@ def train_model(config, train_loader, val_loader):
         config["device"]["type"] if torch.cuda.is_available() else "cpu"
     )
 
-    # Initialize model, optimizer, and loss function
-    model_class = getattr(
-        __import__("models", fromlist=[config["model"]["name"]]),
-        config["model"]["name"],
-    )
+    # Model mapping for dynamic selection
+    model_mapping = {
+        "cnn_lstm": CNNLSTM,
+        "gru": GRU,
+        "lstm": LSTM,
+        "lstm41": LSTM41,
+        "lstmreset": LSTMRESET,
+        "nbeats": NBeatsModel,
+    }
+
+    # Validate model name
+    model_name = config["model"]["name"]
+    if model_name not in model_mapping:
+        raise ValueError(
+            f"Unsupported model name '{model_name}'. Available options are: {list(model_mapping.keys())}"
+        )
+
+    # Initialize the model
+    model_class = model_mapping[model_name]
     model = model_class(config["model"]).to(device)
+
+    # Initialize optimizer and loss function
     optimizer = Adam(model.parameters(), lr=config["training"]["learning_rate"])
     criterion = MSELoss()
+
+    # Initialize learning rate scheduler
+    scheduler = ReduceLROnPlateau(
+        optimizer,
+        mode="min",
+        factor=config["training"].get("scheduler_gamma", 0.1),
+        patience=config["training"].get("scheduler_patience", 5),
+        verbose=True,
+    )
 
     # Store training loss trend
     loss_trend = []
@@ -62,9 +94,13 @@ def train_model(config, train_loader, val_loader):
         # Validation
         val_loss = log_metrics(model, val_loader, criterion, device)
 
+        # Update scheduler based on validation loss
+        scheduler.step(val_loss)
+
         print(
             f"Epoch {epoch + 1}/{config['training']['epochs']}: "
-            f"Train Loss = {avg_train_loss:.4f}, Val Loss = {val_loss:.4f}"
+            f"Train Loss = {avg_train_loss:.4f}, Val Loss = {val_loss:.4f}, "
+            f"Learning Rate = {optimizer.param_groups[0]['lr']:.6f}"
         )
 
     # Save the trained model

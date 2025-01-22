@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from utils.benchmark import benchmark, metric_with_times
+import time
 
 
 def test_model(config, trained_model, val_loader):
