@@ -2,6 +2,7 @@ import yaml
 from run.train import train_model
 from run.test import test_model
 from data_provider.data_factory import create_loaders
+from utils.viz import visualize_results
 import pandas as pd
 import warnings
 
@@ -18,8 +19,9 @@ if __name__ == "__main__":
     # Load configuration
     config = load_config()
 
-    # load the dataset
-    df = pd.read_parquet("example/dataset/2025_AllSites_Orig.parquet")
+    # Load the dataset using the path from the config
+    dataset_path = config["dataset"]["path"]
+    df = pd.read_parquet(dataset_path)
     print("Loaded dataset", df.head())
 
     # Create the train and validation data loaders
@@ -32,6 +34,7 @@ if __name__ == "__main__":
     # Test the model
     print("Testing the LSTM model...")
     inf_result = test_model(config, trained_model, val_loader)
+    print(inf_result)
     """
     test_model:
     # return {

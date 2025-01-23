@@ -2,36 +2,47 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def plot_metrics(metrics):
+def plot_hour_metrics(metric_results):
     """
-    Plots key metrics (e.g., RMSE, MAE, Precision, Recall).
+    Plots RMSE, MAE, Precision, and Recall across prediction hours.
 
     Parameters:
-        metrics (dict): Dictionary containing evaluation metrics (e.g., RMSE, MAE, precision, recall).
+        metric_results (dict): Dictionary containing hour-wise metric results.
     """
-    # Convert metrics to DataFrame for plotting
-    metrics_df = pd.DataFrame([metrics])
+    metric_df = pd.DataFrame(metric_results)
 
     # Plot RMSE and MAE
     plt.figure(figsize=(10, 6))
-    plt.bar(
-        ["RMSE", "MAE"], [metrics["RMSE"], metrics["MAE"]], color=["blue", "orange"]
-    )
-    plt.title("Model Performance Metrics (RMSE and MAE)")
-    plt.ylabel("Value")
+    plt.plot(metric_df["Hour"], metric_df["RMSE"], marker="o", label="RMSE")
+    plt.plot(metric_df["Hour"], metric_df["MAE"], marker="s", label="MAE")
+    plt.title("RMSE and MAE Across Prediction Hours")
+    plt.xlabel("Prediction Hour")
+    plt.ylabel("Error")
+    plt.legend()
     plt.grid(True)
     plt.show()
 
-    # Plot Precision and Recall if they exist in the metrics
-    if "Freezing Precision" in metrics and "Freezing Recall" in metrics:
+    # Plot Precision and Recall
+    if "Freezing Precision" in metric_df and "Freezing Recall" in metric_df:
         plt.figure(figsize=(10, 6))
-        plt.bar(
-            ["Precision", "Recall"],
-            [metrics["Freezing Precision"], metrics["Freezing Recall"]],
-            color=["green", "red"],
+        plt.plot(
+            metric_df["Hour"],
+            metric_df["Freezing Prediction Precision"],
+            marker="o",
+            label="Precision",
+            color="blue",
         )
-        plt.title("Freezing Prediction Metrics (Precision and Recall)")
-        plt.ylabel("Value")
+        plt.plot(
+            metric_df["Hour"],
+            metric_df["Freezing Prediction Recall"],
+            marker="s",
+            label="Recall",
+            color="green",
+        )
+        plt.title("Freezing Prediction Precision and Recall Across Prediction Hours")
+        plt.xlabel("Prediction Hour")
+        plt.ylabel("Metric Value")
+        plt.legend()
         plt.grid(True)
         plt.show()
 
@@ -83,7 +94,7 @@ def plot_training_loss(loss_values):
 
 def visualize_results(inf_result, loss_values):
     """
-    Visualizes metrics, predictions vs. actuals, and training loss using the results from the `test_model` function.
+    Visualizes hour-wise metrics, predictions vs. actuals, and training loss.
 
     Parameters:
         inf_result (dict): Result dictionary from `test_model`, containing:
@@ -93,17 +104,30 @@ def visualize_results(inf_result, loss_values):
             - 'avg_inference_time': Average inference time per batch.
         loss_values (list): List of training loss values over epochs.
     """
-    # Extract data from inf_result
+    # Extract results
     actual = inf_result["true_values"]
     predicted = inf_result["predicted_values"]
-    metrics = inf_result["metrics"]
     avg_inference_time = inf_result["avg_inference_time"]
 
-    # Display timing information
     print(f"Average Inference Time: {avg_inference_time:.4f} seconds")
 
-    # Plot metrics
-    plot_metrics(metrics)
+    # Compute hour-wise metrics
+    metric_results = {"Hour": [], "RMSE": [], "MAE": []}
+    for i in range(predicted.shape[1]):  # Assuming predicted is [samples, horizons]
+        hour_actual = actual[:, i]
+        hour_pred = predicted[:, i]
+        # Replace this with computed metrics for each hour
+        hour_metrics = {
+            "RMSE": ((hour_actual - hour_pred) ** 2).mean() ** 0.5,
+            "MAE": abs(hour_actual - hour_pred).mean(),
+        }
+
+        metric_results["Hour"].append(i + 1)
+        metric_results["RMSE"].append(hour_metrics["RMSE"])
+        metric_results["MAE"].append(hour_metrics["MAE"])
+
+    # Plot hour-wise metrics
+    plot_hour_metrics(metric_results)
 
     # Plot predictions vs. actuals
     plot_predictions(actual, predicted)

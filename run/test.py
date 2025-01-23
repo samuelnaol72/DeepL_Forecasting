@@ -17,7 +17,7 @@ def test_model(config, trained_model, val_loader):
         dict: Dictionary containing:
             - 'true_values' (numpy.ndarray): True target values.
             - 'predicted_values' (numpy.ndarray): Predicted target values.
-            - 'metrics' (dict): Evaluation metrics (e.g., RMSE, MAE, precision).
+            - 'hour_metrics' (list[dict]): List of evaluation metrics for each prediction hour.
             - 'avg_inference_time' (float): Average inference time per batch.
     """
     # Set device
@@ -60,34 +60,40 @@ def test_model(config, trained_model, val_loader):
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
 
-    # Compute regression metrics
-    metrics = benchmark(y_true, y_pred)
+    # Initialize hour-wise metrics storage
+    hour_metrics = []
+    horizons = y_pred.shape[1]  # Assuming predictions have shape [samples, horizons]
 
-    # Compute additional metrics with timing
-    timing_metrics = metric_with_times(
-        y_test=y_true,
-        y_pred=y_pred,
-        train_time=config.get("training_time", 0),  # Default 0 if not logged
-        inf_time=avg_inference_time,
-    )
+    for hour in range(horizons):
+        print(f"Calculating metrics for prediction hour {hour + 1}...")
+
+        hour_true = y_true[:, hour]
+        hour_pred = y_pred[:, hour]
+
+        # Compute metrics for this hour
+        hour_metric = metric_with_times(
+            y_test=hour_true,
+            y_pred=hour_pred,
+            train_time=config.get("training_time", 0),
+            inf_time=avg_inference_time,
+        )
+        hour_metrics.append(hour_metric.to_dict(orient="records")[0])
+
+    # Compute aggregate metrics (e.g., over all horizons)
+    aggregate_metrics = benchmark(y_true, y_pred)
 
     # Print results
-    print("Benchmark Metrics:")
-    print(metrics)
+    print("Hour-Wise Metrics:")
+    for hour, metrics in enumerate(hour_metrics, 1):
+        print(f"Hour {hour}: {metrics}")
 
-    print("Timing Metrics:")
-    print(timing_metrics)
-
-    # Combine metrics
-    combined_metrics = {
-        **metrics.to_dict(orient="records")[0],
-        **timing_metrics.to_dict(orient="records")[0],
-    }
+    print("Aggregate Metrics:")
+    print(aggregate_metrics)
 
     # Return results
     return {
         "true_values": y_true,
         "predicted_values": y_pred,
-        "metrics": combined_metrics,
+        "hour_metrics": hour_metrics,
         "avg_inference_time": avg_inference_time,
     }

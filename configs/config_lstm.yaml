@@ -1,8 +1,12 @@
-# Configuration for DataLoader and Training
+dataset:
+  path: "example/dataset/2025_AllSites_Orig.parquet"
+
+
 preprocessing:
-  lags: 24                   # Number of lagged features to include
-  horizon: 8                 # Number of future steps to predict
-  ids: [0]          # List of sites to preprocess in the dataset
+  lags: 24                   # lags window
+  horizon: 8                 # future time window
+  ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+         # List of sites to preprocess in the dataset
   features: 1                # Number of features per timestep
   channels: 1                # Number of channels in the target output
 
