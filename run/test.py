@@ -79,9 +79,10 @@ def test_model(config, trained_model, val_loader):
         )
         hour_metrics.append(hour_metric.to_dict(orient="records")[0])
 
-    # Compute aggregate metrics (e.g., over all horizons)
-    aggregate_metrics = benchmark(y_true, y_pred)
+    # # Compute aggregate metrics (e.g., over all horizons)
+    # aggregate_metrics = benchmark(y_true, y_pred)
 
+    """
     # Print results
     print("Hour-Wise Metrics:")
     for hour, metrics in enumerate(hour_metrics, 1):
@@ -89,11 +90,12 @@ def test_model(config, trained_model, val_loader):
 
     print("Aggregate Metrics:")
     print(aggregate_metrics)
+    """
 
     # Return results
     return {
         "true_values": y_true,
         "predicted_values": y_pred,
-        "hour_metrics": hour_metrics,
+        "metrics": hour_metrics,
         "avg_inference_time": avg_inference_time,
     }

@@ -34,7 +34,7 @@ if __name__ == "__main__":
     # Test the NBeats model
     print("Testing the NBeats model...")
     inf_result = test_model(config, trained_model, val_loader)
-    print("Inference Results:", inf_result)
+    print("Inference Results:", inf_result["metrics"])
     """
     test_model:
     # return {

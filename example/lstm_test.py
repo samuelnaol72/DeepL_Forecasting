@@ -34,7 +34,6 @@ if __name__ == "__main__":
     # Test the model
     print("Testing the LSTM model...")
     inf_result = test_model(config, trained_model, val_loader)
-    print(inf_result)
     """
     test_model:
     # return {
@@ -44,6 +43,7 @@ if __name__ == "__main__":
             "avg_inference_time": avg_inference_time,
         }
     """
+    print(inf_result["metrics"])
 
     # Visualization
     visualize_results(inf_result, loss_trend)

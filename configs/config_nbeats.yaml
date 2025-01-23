@@ -27,6 +27,6 @@ device:
 
 training:
   learning_rate: 0.001       # Learning rate for the optimizer
-  epochs: 5                 # Number of training epochs
+  epochs: 2                 # Number of training epochs
   scheduler_gamma: 0.1       # Factor to reduce the learning rate
   scheduler_patience: 5      # Number of epochs to wait before reducing LR
